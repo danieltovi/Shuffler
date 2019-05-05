@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.util.Arrays;
 
 public class SwingUtils {
-
     public static String suffixPrompt() {
         return JOptionPane.showInputDialog("Enter file extension",".mp4");
     }

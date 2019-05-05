@@ -1,6 +1,24 @@
+import java.awt.*;
 import java.io.*;
+import java.util.Random;
 
 public class Main {
+
+    private static final Random rng = new Random();
+
+    private static void weightedShufflePlay(FileManager fm) throws Exception {
+        int randomSample = rng.nextInt(fm.getWeightSum());
+
+        for (File media : fm.getFileSet()) {
+            randomSample -= fm.getFileWeight(media);
+
+            if (randomSample <= 0) {
+                Desktop.getDesktop().open(media);
+                fm.decrementFileWeight(media);
+                break;
+            }
+        }
+    }
 
     public static void main(String[] args) {
         FileManager fm;
@@ -19,12 +37,13 @@ public class Main {
                 while(suffix != null && FileManager.getRelevantFiles(suffix,userDirFile).length == 0)
                     suffix = SwingUtils.invalidSuffixPrompt(suffix);
 
+                // catch user canceling or x-ing out of prompt
                 if (suffix == null) return;
 
                 fm = new FileManager(suffix, userDirFile);
             }
 
-            Shuffler.weightedShufflePlay(fm);
+            weightedShufflePlay(fm);
             Persistence.saveToFile(fm, serializedFileName);
 
         } catch (Exception e) {

@@ -7,7 +7,7 @@ public class FileManager implements Serializable {
     private final String SUFFIX;
     private HashMap<File,Integer> fileMap;
 
-    private int weightOffset = 1; // offsets non-positive file weights so that they appear positive
+    private int weightOffset = 1; // offsets non-positive file weights so that they appear positive when called
 
     public static File[] getRelevantFiles(String suffix, File directoryFile) {
         return directoryFile.listFiles((dir, name) -> name.toLowerCase().endsWith(suffix.toLowerCase()));
@@ -22,6 +22,9 @@ public class FileManager implements Serializable {
     }
 
     public FileManager update(File directoryFile) {
+        fileMap.keySet().removeIf(file -> !file.exists());
+
+        // discover new files by getting an up to date file list and removing the ones already in fileMap
         ArrayList<File> newFiles = new ArrayList<>(Arrays.asList(getRelevantFiles(SUFFIX,directoryFile)));
         newFiles.removeAll(fileMap.keySet());
 
@@ -35,8 +38,12 @@ public class FileManager implements Serializable {
         return new ArrayList<>(fileMap.keySet());
     }
 
-    public void removeFile(File file) {
-        fileMap.remove(file);
+    public int getWeightSum() {
+        return fileMap.values().stream().mapToInt(i -> i).sum() + fileMap.size()*weightOffset;
+    }
+
+    public int getFileWeight(File file) {
+        return fileMap.get(file) + weightOffset;
     }
 
     public void decrementFileWeight(File file) {
@@ -44,13 +51,5 @@ public class FileManager implements Serializable {
 
         if (weightOffset + fileMap.get(file) == 0)
             weightOffset++;
-    }
-
-    public int getWeightSum() {
-        return fileMap.values().stream().mapToInt(i -> i).sum() + fileMap.size()*weightOffset;
-    }
-
-    public int getFileWeight(File file) {
-        return fileMap.get(file) + weightOffset;
     }
 }
